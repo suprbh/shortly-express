@@ -92,7 +92,6 @@ app.get('/logout', function(req, res){
 app.post('/links',
 function(req, res) {
   var uri = req.body.url;
-  console.log("Here");
 
   if (!util.isValidUrl(uri)) {
     console.log('Not a valid url: ', uri);
@@ -147,16 +146,6 @@ app.post('/signup', function(req, res){
         });
     });
   });
-  // if(userObj){
-  //     request.session.regenerate(function(){
-  //         request.session.user = userObj.username;
-  //         response.redirect('/restricted');
-  //     });
-  // }
-  // else {
-  //     res.redirect('login');
-  // }
-
 });
 
 app.post('/login', function(req, res){
@@ -189,29 +178,6 @@ app.post('/login', function(req, res){
       }
     });
 });
-
-// session variables:
-// req.session.name = username;
-// get session variables:
-// var name = req.session.name;
-
-// session destroy:
-// req.session.destroy();
-// req.session.destroy(function(){
-// res.send('Session deleted');
-// });
-//
-//
-//
-// function restrict(req, res) {
-//   if (req.session.user) {
-//     res.render('index');
-//   } else {
-//     req.session.error = 'Access denied!';
-//     res.redirect('/login');
-//   }
-// }
-
 
 /************************************************************/
 // Handle the wildcard route last - if all other routes fail
