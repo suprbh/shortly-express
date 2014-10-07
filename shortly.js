@@ -27,7 +27,6 @@ app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
 app.use(cookieParser());
-//possibly add options to session.
 app.use(session({secret: "This is a long string."}));
 
 app.get('/',
@@ -36,6 +35,14 @@ function(req, res) {
     res.redirect('/index');
   } else {
     res.render('login');
+  }
+});
+
+app.get('/index', function(req, res){
+  if (req.session.name){
+    res.render('index');
+  } else {
+    res.redirect('/login');
   }
 });
 
@@ -64,10 +71,9 @@ function(req, res) {
 
 app.get('/links',
 function(req, res) {
-  // send user to login page if he tries to access all links when not logged in
   if (req.session.name){
+    // show a page with all the shortened links instead of the JSON data
     Links.reset().fetch().then(function(links) {
-      // res.send(200, links.models);
       var $linkPage = '<h1>Shortly</h1>' +'<h2>Links Page</h2>';
       _.each(links.models, function(row){
         console.log(row);
@@ -80,18 +86,6 @@ function(req, res) {
   }
 });
 
-app.get('/index', function(req, res){
-  if (req.session.name){
-    res.render('index');
-  } else {
-    res.redirect('/login');
-  }
-});
-
-app.get('/success/signup',
-  function(req, res) {
-      res.redirect('/login');
-});
 
 app.get('/logout', function(req, res){
   req.session.destroy(function(){
@@ -176,13 +170,10 @@ app.post('/login', function(req, res){
           if (err) {
             throw(err);
           } else if(result){
-            // found user in DB
-            // console.log('cookies', req.cookies.name);
-            //
             req.session.name = username;
             res.redirect('/index');
           } else if(!result){
-            // Did not match password
+            // Did not match password, rerender login to have them try again
             res.render('login');
           }
         });
