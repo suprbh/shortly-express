@@ -6,7 +6,7 @@ var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var bcrypt = require('bcrypt-nodejs');
 var _ = require('underscore');
-var $ = require('jquery');
+var $ = require('jquery') ;
 
 
 var db = require('./app/config');
@@ -70,7 +70,8 @@ function(req, res) {
       // res.send(200, links.models);
       var $linkPage = '<h1>Shortly</h1>' +'<h2>Links Page</h2>';
       _.each(links.models, function(row){
-        $linkPage += '<p><a href="'+row.url+'" >'+row.base_url+'/'+row.code+'</a></p>';
+        console.log(row);
+        $linkPage += '<p><a href="'+row.attributes.url+'" >'+row.attributes.base_url+'/'+row.attributes.code+'</a></p>';
       });
       res.send(200, $linkPage);
     });
