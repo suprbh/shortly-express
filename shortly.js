@@ -68,9 +68,12 @@ function(req, res) {
 
 app.get('/success/signup',
   function(req, res) {
-    res.send('<h1>Successful Signup!</h1><p>Redirecting to Login page</p>');
+    // res.send('<h1>Successful Signup!</h1><p>Redirecting to Login page</p>');
+      res.redirect('/login');
+    //
     setTimeout(function(){
-      res.render('login');
+      console.log("Here");
+      res.redirect('/login');
     }, 5000);
 });
 
@@ -114,16 +117,11 @@ function(req, res) {
 /************************************************************/
 
 app.post('/signup', function(req, res){
-  // var usr = JSON.parse(req.body);
   //read in username, password
   var username1 = req.body.username;
   var password1 = req.body.password;
-  // console.log("Usr, passwd", username, password);
-  // before redirect, confirm to user that they successfully signed up
-  // alert(username);
   var salt1 = bcrypt.genSaltSync(10);
   var hash1 = bcrypt.hashSync(password1, salt1);
-  // var userObj = db.({ username: username, password: hash, salt: salt });
 
   var newUser = new User({
           username: username1,
@@ -131,7 +129,7 @@ app.post('/signup', function(req, res){
           salt: salt1
         });
   newUser.save().then(function(){
-    // done();
+    res.redirect('/login');
   });
 
   // if(userObj){
@@ -144,10 +142,33 @@ app.post('/signup', function(req, res){
   //     res.redirect('login');
   // }
 
-  // res.redirect('/success/signup');
 });
 
+app.post('/login', function(req, res){
+  var username = req.body.username;
+  var password1 = req.body.password;
 
+  db.knex('users')
+    .where('username', '=', username)
+    .then(function(user) {
+      if (user) {
+        //if the user exists save the hash from the db
+        var foundPassword = user[0].password;
+        //get the salt
+        var foundSalt = user[0].salt;
+        //hash the password and the salt together
+        var hash = bcrypt.hashSync(password1, foundSalt);
+        //see if the passwords match
+        console.log(foundPassword + "?==" + hash);
+        if(foundPassword === hash) {
+          res.render('index');
+        } else {
+          //wrong password
+          res.send(404);
+        }
+      }
+    });
+});
 // function restrict(req, res) {
 //   if (req.session.user) {
 //     res.render('index');
