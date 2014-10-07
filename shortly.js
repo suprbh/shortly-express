@@ -27,42 +27,45 @@ app.use(express.static(__dirname + '/public'));
 // app.use(express.cookies());
 // app.use(express.session());
 
-app.get('/', restrict,
+app.get('/',
 function(req, res) {
   // if user is logged in,
-    res.render('index');
+    // res.render('index');
   // else, redirect to /login
-  //  res.render('login');
+  res.render('login');
 
 });
 
 app.get('/login', function(req, res){
-
-  res.send('<form method="post" action="/login">' +
-  '<p>' +
-    '<label>Username:</label>' +
-    '<input type="text" name="username">' +
-  '</p>' +
-  '<p>' +
-    '<label>Password:</label>' +
-    '<input type="password" name="password">' +
-  '</p>' +
-  '<p>' +
-    '<input type="submit" value="Login">' +
-  '</p>' +
-  '</form>');
+  res.render('login');
 });
+
+app.get('/signup', function(req, res){
+  console.log("Here");
+
+  // res.render('login');
+  res.send(util.signupPage);
+  // get the user name, password
+
+});
+
 
 app.get('/create',
 function(req, res) {
-  res.render('index');
+  // if not logged in
+  res.render('login');
+
+  // res.render('index');
 });
 
 app.get('/links',
 function(req, res) {
-  Links.reset().fetch().then(function(links) {
-    res.send(200, links.models);
-  });
+  // send user to login page if he tries to access all links when not logged in
+  res.render('login');
+  // else if logged in, send the links
+  // Links.reset().fetch().then(function(links) {
+  //   res.send(200, links.models);
+  // });
 });
 
 
@@ -103,14 +106,21 @@ function(req, res) {
 /************************************************************/
 // Write your authentication routes here
 /************************************************************/
-function restrict(req, res) {
-  if (req.session.user) {
-    res.render('index');
-  } else {
-    req.session.error = 'Access denied!';
-    res.redirect('/login');
-  }
-}
+
+app.post('/signup', function(req, res){
+  var usr = JSON.parse(req.body);
+  console.log("[here]",usr);
+});
+
+
+// function restrict(req, res) {
+//   if (req.session.user) {
+//     res.render('index');
+//   } else {
+//     req.session.error = 'Access denied!';
+//     res.redirect('/login');
+//   }
+// }
 
 
 /************************************************************/
@@ -120,7 +130,6 @@ function restrict(req, res) {
 /************************************************************/
 
 app.get('/*', function(req, res) {
-
   new Link({ code: req.params[0] }).fetch().then(function(link) {
     if (!link) {
       res.redirect('/');
