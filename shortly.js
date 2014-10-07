@@ -4,6 +4,7 @@ var partials = require('express-partials');
 var bodyParser = require('body-parser');
 var cookies = require('cookie-parser');
 var session = require('express-session');
+var bcrypt = require('bcrypt-nodejs');
 
 
 var db = require('./app/config');
@@ -41,12 +42,9 @@ app.get('/login', function(req, res){
 });
 
 app.get('/signup', function(req, res){
-  console.log("Here");
-
   // res.render('login');
   res.send(util.signupPage);
   // get the user name, password
-
 });
 
 
@@ -66,6 +64,14 @@ function(req, res) {
   // Links.reset().fetch().then(function(links) {
   //   res.send(200, links.models);
   // });
+});
+
+app.get('/success/signup',
+  function(req, res) {
+    res.send('<h1>Successful Signup!</h1><p>Redirecting to Login page</p>');
+    setTimeout(function(){
+      res.render('login');
+    }, 5000);
 });
 
 
@@ -108,8 +114,37 @@ function(req, res) {
 /************************************************************/
 
 app.post('/signup', function(req, res){
-  var usr = JSON.parse(req.body);
-  console.log("[here]",usr);
+  // var usr = JSON.parse(req.body);
+  //read in username, password
+  var username1 = req.body.username;
+  var password1 = req.body.password;
+  // console.log("Usr, passwd", username, password);
+  // before redirect, confirm to user that they successfully signed up
+  // alert(username);
+  var salt1 = bcrypt.genSaltSync(10);
+  var hash1 = bcrypt.hashSync(password1, salt1);
+  // var userObj = db.({ username: username, password: hash, salt: salt });
+
+  var newUser = new User({
+          username: username1,
+          password: hash1,
+          salt: salt1
+        });
+  newUser.save().then(function(){
+    // done();
+  });
+
+  // if(userObj){
+  //     request.session.regenerate(function(){
+  //         request.session.user = userObj.username;
+  //         response.redirect('/restricted');
+  //     });
+  // }
+  // else {
+  //     res.redirect('login');
+  // }
+
+  // res.redirect('/success/signup');
 });
 
 
@@ -153,3 +188,5 @@ app.get('/*', function(req, res) {
 
 console.log('Shortly is listening on 4568');
 app.listen(4568);
+
+

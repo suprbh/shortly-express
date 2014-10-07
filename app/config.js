@@ -45,5 +45,19 @@ db.knex.schema.hasTable('clicks').then(function(exists) {
 // Add additional schema definitions below
 /************************************************************/
 
+db.knex.schema.hasTable('users').then(function(exists) {
+  if (!exists) {
+    db.knex.schema.createTable('users', function (users) {
+      users.increments('id').primary();
+      users.string('username', 50);
+      users.string("password", 60);
+      //initial password can be 56 bytes, salt being 10 characters
+      //hash output will be 60 characters
+      users.string("salt", 10);
+    }).then(function (table) {
+      console.log('Created Table', table);
+    });
+  }
+});
 
 module.exports = db;
