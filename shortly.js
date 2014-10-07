@@ -2,7 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-// var cookies = require('cookie-parser');
+var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var bcrypt = require('bcrypt-nodejs');
 
@@ -24,20 +24,25 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
-// app.use(cookies("This is a long string."));
+app.use(cookieParser());
 //possibly add options to session.
-// app.use(session());
+app.use(session({secret: "This is a long string."}));
 
 app.get('/',
 function(req, res) {
-  // if user is logged in,
-    // res.render('index');
-  // else, redirect to /login
-  res.render('login');
+  if (req.session.name){
+    res.redirect('/index');
+  } else {
+    res.render('login');
+  }
 });
 
 app.get('/login', function(req, res){
-  res.render('login');
+  if (req.session.name){
+    res.redirect('/index');
+  } else {
+    res.render('login');
+  }
 });
 
 app.get('/signup', function(req, res){
@@ -46,13 +51,25 @@ app.get('/signup', function(req, res){
 
 app.get('/create',
 function(req, res) {
-  res.render('login');
+  if (req.session.name){
+    console.log("Cookie got me here:", req.session.name);
+    // change to forward to the user's list of shortenedURLs
+    res.render('index');
+  } else {
+    res.render('login');
+  }
 });
 
 app.get('/links',
 function(req, res) {
   // send user to login page if he tries to access all links when not logged in
-  res.render('login');
+  if (req.session.name){
+    Links.reset().fetch().then(function(links) {
+      res.send(200, links.models);
+    });
+  } else {
+    res.render('login');
+  }
 });
 
 app.get('/index', function(req, res){
@@ -62,17 +79,20 @@ app.get('/index', function(req, res){
 app.get('/success/signup',
   function(req, res) {
       res.redirect('/login');
+});
 
-    // res.send('<h1>Successful Signup!</h1><p>Redirecting to Login page</p>');
-    // setTimeout(function(){
-    //   console.log("Here");
-    //   res.redirect('/login');
-    // }, 5000);
+app.get('/logout', function(req, res){
+  req.session.destroy(function(){
+    // console.log("Logging out user: ");
+    res.send("Logged out user");
+  });
+  // res.render('login');
 });
 
 app.post('/links',
 function(req, res) {
   var uri = req.body.url;
+  console.log("Here");
 
   if (!util.isValidUrl(uri)) {
     console.log('Not a valid url: ', uri);
@@ -96,6 +116,7 @@ function(req, res) {
         });
 
         link.save().then(function(newLink) {
+          console.log(newLink);
           Links.add(newLink);
           res.send(200, newLink);
         });
@@ -158,6 +179,7 @@ app.post('/login', function(req, res){
             // found user in DB
             // console.log('cookies', req.cookies.name);
             //
+            req.session.name = username;
             res.redirect('/index');
           } else if(!result){
             // Did not match password
@@ -167,6 +189,20 @@ app.post('/login', function(req, res){
       }
     });
 });
+
+// session variables:
+// req.session.name = username;
+// get session variables:
+// var name = req.session.name;
+
+// session destroy:
+// req.session.destroy();
+// req.session.destroy(function(){
+// res.send('Session deleted');
+// });
+//
+//
+//
 // function restrict(req, res) {
 //   if (req.session.user) {
 //     res.render('index');
