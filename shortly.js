@@ -120,18 +120,20 @@ app.post('/signup', function(req, res){
   //read in username, password
   var username1 = req.body.username;
   var password1 = req.body.password;
-  var salt1 = bcrypt.genSaltSync(10);
-  var hash1 = bcrypt.hashSync(password1, salt1);
 
-  var newUser = new User({
-          username: username1,
-          password: hash1,
-          salt: salt1
+  bcrypt.genSalt(10, function(err, salt) {
+    bcrypt.hash(password1, salt, function(err, progress){}, function(err, hash) {
+        // Store hash in your password DB.
+        var newUser = new User({
+                username: username1,
+                password: hash,
+                salt: salt
+              });
+        newUser.save().then(function(){
+          res.redirect('/login');
         });
-  newUser.save().then(function(){
-    res.redirect('/login');
+    });
   });
-
   // if(userObj){
   //     request.session.regenerate(function(){
   //         request.session.user = userObj.username;
@@ -147,25 +149,27 @@ app.post('/signup', function(req, res){
 app.post('/login', function(req, res){
   var username = req.body.username;
   var password1 = req.body.password;
+  if (password1 === "" || username === ""){
+    res.render('login');
+  }
 
   db.knex('users')
     .where('username', '=', username)
     .then(function(user) {
-      if (user) {
+      if (user.length > 0) {
         //if the user exists save the hash from the db
-        var foundPassword = user[0].password;
-        //get the salt
-        var foundSalt = user[0].salt;
-        //hash the password and the salt together
-        var hash = bcrypt.hashSync(password1, foundSalt);
-        //see if the passwords match
-        console.log(foundPassword + "?==" + hash);
-        if(foundPassword === hash) {
-          res.render('index');
-        } else {
-          //wrong password
-          res.send(404);
-        }
+        var foundHash = user[0].password;
+        bcrypt.compare(password1, foundHash, function(err, result){
+          if (err) {
+            throw(err);
+          } else if(result){
+            // found user in DB
+            res.render('index');
+          } else if(!result){
+            // Did not match password
+            res.render('login');
+          }
+        });
       }
     });
 });
