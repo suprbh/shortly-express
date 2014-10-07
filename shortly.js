@@ -2,7 +2,7 @@ var express = require('express');
 var util = require('./lib/utility');
 var partials = require('express-partials');
 var bodyParser = require('body-parser');
-var cookies = require('cookie-parser');
+// var cookies = require('cookie-parser');
 var session = require('express-session');
 var bcrypt = require('bcrypt-nodejs');
 
@@ -24,9 +24,9 @@ app.use(bodyParser.json());
 // Parse forms (signup/login)
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(express.static(__dirname + '/public'));
-// app.use(express.bodyParser());
-// app.use(express.cookies());
-// app.use(express.session());
+// app.use(cookies("This is a long string."));
+//possibly add options to session.
+// app.use(session());
 
 app.get('/',
 function(req, res) {
@@ -34,7 +34,6 @@ function(req, res) {
     // res.render('index');
   // else, redirect to /login
   res.render('login');
-
 });
 
 app.get('/login', function(req, res){
@@ -42,41 +41,34 @@ app.get('/login', function(req, res){
 });
 
 app.get('/signup', function(req, res){
-  // res.render('login');
   res.send(util.signupPage);
-  // get the user name, password
 });
-
 
 app.get('/create',
 function(req, res) {
-  // if not logged in
   res.render('login');
-
-  // res.render('index');
 });
 
 app.get('/links',
 function(req, res) {
   // send user to login page if he tries to access all links when not logged in
   res.render('login');
-  // else if logged in, send the links
-  // Links.reset().fetch().then(function(links) {
-  //   res.send(200, links.models);
-  // });
+});
+
+app.get('/index', function(req, res){
+  res.render('index');
 });
 
 app.get('/success/signup',
   function(req, res) {
-    // res.send('<h1>Successful Signup!</h1><p>Redirecting to Login page</p>');
       res.redirect('/login');
-    //
-    setTimeout(function(){
-      console.log("Here");
-      res.redirect('/login');
-    }, 5000);
-});
 
+    // res.send('<h1>Successful Signup!</h1><p>Redirecting to Login page</p>');
+    // setTimeout(function(){
+    //   console.log("Here");
+    //   res.redirect('/login');
+    // }, 5000);
+});
 
 app.post('/links',
 function(req, res) {
@@ -164,7 +156,9 @@ app.post('/login', function(req, res){
             throw(err);
           } else if(result){
             // found user in DB
-            res.render('index');
+            // console.log('cookies', req.cookies.name);
+            //
+            res.redirect('/index');
           } else if(!result){
             // Did not match password
             res.render('login');
