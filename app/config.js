@@ -53,7 +53,6 @@ db.knex.schema.hasTable('users').then(function(exists) {
       users.string("password", 60);
       //initial password can be 56 bytes, salt being 10 characters
       //hash output will be 60 characters
-      users.string("salt", 10);
     }).then(function (table) {
       console.log('Created Table', table);
     });

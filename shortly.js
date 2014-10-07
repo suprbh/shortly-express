@@ -5,6 +5,8 @@ var bodyParser = require('body-parser');
 var cookieParser = require('cookie-parser');
 var session = require('express-session');
 var bcrypt = require('bcrypt-nodejs');
+var _ = require('underscore');
+var $ = require('jquery');
 
 
 var db = require('./app/config');
@@ -65,7 +67,12 @@ function(req, res) {
   // send user to login page if he tries to access all links when not logged in
   if (req.session.name){
     Links.reset().fetch().then(function(links) {
-      res.send(200, links.models);
+      // res.send(200, links.models);
+      var $linkPage = '<h1>Shortly</h1>' +'<h2>Links Page</h2>';
+      _.each(links.models, function(row){
+        $linkPage += '<p><a href="'+row.url+'" >'+row.base_url+'/'+row.code+'</a></p>';
+      });
+      res.send(200, $linkPage);
     });
   } else {
     res.render('login');
@@ -73,7 +80,11 @@ function(req, res) {
 });
 
 app.get('/index', function(req, res){
-  res.render('index');
+  if (req.session.name){
+    res.render('index');
+  } else {
+    res.redirect('/login');
+  }
 });
 
 app.get('/success/signup',
@@ -138,8 +149,7 @@ app.post('/signup', function(req, res){
         // Store hash in your password DB.
         var newUser = new User({
                 username: username1,
-                password: hash,
-                salt: salt
+                password: hash
               });
         newUser.save().then(function(){
           res.redirect('/login');
