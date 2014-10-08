@@ -60,12 +60,11 @@ app.get('/signup', function(req, res){
 
 app.get('/create',
 function(req, res) {
+  console.log("Create in shortly.js");
   if (req.session.name){
-    console.log("Cookie got me here:", req.session.name);
-    // change to forward to the user's list of shortenedURLs
-    res.render('index');
+    res.redirect('/index');
   } else {
-    res.render('login');
+    res.redirect('/login');
   }
 });
 
@@ -76,10 +75,10 @@ function(req, res) {
     Links.reset().fetch().then(function(links) {
       var $linkPage = '<h1>Shortly</h1>' +'<h2>Links Page</h2>';
       _.each(links.models, function(row){
-        console.log(row);
         $linkPage += '<p><a href="'+row.attributes.url+'" >'+row.attributes.base_url+'/'+row.attributes.code+'</a></p>';
       });
-      res.send(200, $linkPage);
+      // res.send(200, $linkPage);
+      res.send(200, links.models);
     });
   } else {
     res.render('login');
@@ -89,10 +88,8 @@ function(req, res) {
 
 app.get('/logout', function(req, res){
   req.session.destroy(function(){
-    // console.log("Logging out user: ");
     res.send("Logged out user");
   });
-  // res.render('login');
 });
 
 app.post('/links',

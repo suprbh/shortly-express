@@ -3,6 +3,7 @@
   <ul>
     <li><a href='#' class='index'>All Links</a></li>
     <li><a href='#' class='create'>Shorten</a></li>
+    <li><a href='#' class='logout'>Logout</a></li>
   </ul>
   </div>
   <div id='container'></div>
@@ -29,9 +30,17 @@
   <div class='message'></div>
 </script>
 
+<button id='logout'>Log Out</button>
+
 <script>
   $(function(){
     new Shortly();
+
+    $('#logout').on('click', function() {
+      $.post('https://127.0.0.1:4568/logout', function(data) {
+          console.log("Success");
+      });
+    });
   });
 
   window.Templates = {};
@@ -45,5 +54,6 @@
 <script src='/client/links.js'></script>
 <script src='/client/linkView.js'></script>
 <script src='/client/linksView.js'></script>
+<script src='/client/logout.js'></script>
 <script src='/client/createLinkView.js'></script>
 <script src='/client/router.js'></script>
